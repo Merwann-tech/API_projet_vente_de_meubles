@@ -1,10 +1,11 @@
 import { Router, Request, Response } from 'express';
+import { getAllUsers } from '../services/users.services';
 
 const router = Router();
 
 
 router.get('/', (req: Request, res: Response) => {
-  res.send('User route is working!');
+    res.json(getAllUsers());
 });
 
 router.get('/test', (req: Request, res: Response) => {
