@@ -1,9 +1,11 @@
 import express, { Application, Request, Response } from 'express';
 import { notFound } from './middlewares/notFound';
+import router from './routes';
 
 const app: Application = express();
 
 
+app.use('/', router)
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello TypeScript with Express!');
