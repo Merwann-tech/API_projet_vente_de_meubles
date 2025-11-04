@@ -25,6 +25,9 @@ interface VolunteerData {
 export async function addVolunteer(volunteerData: VolunteerData) {
     let city = await capitalize(volunteerData.city)
     let hashedPassword = await hashPassword(volunteerData.password)
+    if (!isValidEmail(volunteerData.email)) {
+        return { error: "Invalid email format" }
+    }
     if (verifyEmail(volunteerData.email) <= 0) {
         db.exec(`
         INSERT INTO cities (name)
@@ -87,4 +90,9 @@ export function getModeratorById(id: number){
     const stmt = db.prepare('SELECT moderator FROM users WHERE id = ?');
     const user = stmt.get(id);
     return user ? (user['moderator'] as number) : 0;
+}
+
+export function isValidEmail(email: string): boolean {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailPattern.test(email);
 }
