@@ -2,7 +2,7 @@ import express , { Router, Request, Response } from 'express';
 const router = express.Router();
 import { verifyToken } from '../services/token.services';
 import jwt, { JwtPayload } from 'jsonwebtoken'
-import { getAdminById } from '../services/users.services';
+import { getAdminById,getModeratorById } from '../services/users.services';
 
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
@@ -22,6 +22,8 @@ router.get('/', async (req, res) => {
     if (decoded !=null){
         if (getAdminById((decoded as JwtPayload).id)){
             res.send({ message: 'Token is valid and user is admin'})
+        }else if (getModeratorById((decoded as JwtPayload).id)){
+            res.send({ message: 'Token is valid and user is moderator'})
         }else{
         res.send({ message: 'Token is valid'})
         }

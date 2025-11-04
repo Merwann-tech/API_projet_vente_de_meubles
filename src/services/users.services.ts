@@ -1,9 +1,17 @@
+import e from "express";
 import { db } from "../db";
 import { hashPassword } from "./password.services";
+import { get } from "http";
 
 export function getAllUsers() {
   const stmt = db.prepare("SELECT * FROM users");
   return stmt.all();
+}
+
+export function getUserById(id: number) {
+    const stmt = db.prepare("SELECT firstname, lastname, email FROM users WHERE id = ?");
+    const user = stmt.get(id);
+    return user;
 }
 
 interface VolunteerData {
@@ -39,6 +47,13 @@ export async function addVolunteer(volunteerData: VolunteerData) {
     }
 };
 
+export function addModerator(id: number) {
+    const stmt = db.prepare('UPDATE users SET moderator = 1 WHERE id = ?');
+    stmt.run(id);
+    const user = getUserById(id);
+    return { success: `User ${user?.firstname} ${user?.lastname} promoted to moderator` };
+}
+
 function capitalize(city : string) {
     let cityLower = city.toLowerCase()
     let cityCapitalize = (cityLower[0] as string).toUpperCase() + cityLower.slice(1)
@@ -66,4 +81,10 @@ export function getAdminById(id: number){
     const stmt = db.prepare('SELECT admin FROM users WHERE id = ?');
     const user = stmt.get(id);
     return user ? (user['admin'] as number) : 0;
+}
+
+export function getModeratorById(id: number){
+    const stmt = db.prepare('SELECT moderator FROM users WHERE id = ?');
+    const user = stmt.get(id);
+    return user ? (user['moderator'] as number) : 0;
 }
