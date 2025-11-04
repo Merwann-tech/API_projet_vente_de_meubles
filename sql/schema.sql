@@ -1,3 +1,13 @@
+drop TABLE IF EXISTS images;
+drop TABLE IF EXISTS furnitures; 
+drop TABLE IF EXISTS users;
+drop TABLE IF EXISTS furnitures_status;
+drop TABLE IF EXISTS furnitures_type;
+drop TABLE IF EXISTS furnitures_materials;
+drop TABLE IF EXISTS colors;
+drop TABLE IF EXISTS cities;
+
+
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE cities (
@@ -34,6 +44,7 @@ CREATE TABLE users (
   city_id INTEGER NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
+  admin BOOLEAN NOT NULL DEFAULT 0,
   FOREIGN KEY (city_id) REFERENCES cities(id)
 );
 
@@ -65,5 +76,6 @@ CREATE TABLE images (
 );
 
 INSERT INTO cities (name) VALUES ('Paris');
-INSERT INTO users (firstname, lastname, email, password, city_id, created_at, updated_at)
-VALUES ('Jean', 'Dupont', 'jean.dupont@example.com', 'motdepasse123', 1, datetime('now'), datetime('now'));
+INSERT INTO users (firstname, lastname, email, password, city_id, created_at, updated_at, admin)
+VALUES ('admin', 'admin', 'admin@admin.com', '$argon2id$v=19$m=65536,t=3,p=4$k07c8Ot270p8gYQ+mPEfAg$Lc6dhSgek7E/cTk4pv4ISFBrZxdqep6uJfzkcqQZFxo', 1, datetime('now'), datetime('now'), 1);
+
