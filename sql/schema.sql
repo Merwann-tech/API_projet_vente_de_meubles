@@ -45,6 +45,7 @@ CREATE TABLE users (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   admin BOOLEAN NOT NULL DEFAULT 0,
+  moderator BOOLEAN NOT NULL DEFAULT 0,
   FOREIGN KEY (city_id) REFERENCES cities(id)
 );
 
