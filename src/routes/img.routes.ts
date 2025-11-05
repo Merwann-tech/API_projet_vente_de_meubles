@@ -1,7 +1,9 @@
 import express , { Router, Request, Response } from 'express';
 import path from 'path/win32';
 import fs from 'fs';
-import { verifyFurnitureId } from '../services/img.service';
+import { getImgesURLByFurnitureId, verifyFurnitureId } from '../services/img.service';
+import { verifyTokenUsers,verifyTokenAdmin,verifyTokenModerator } from '../middlewares/auth';
+
 const router = Router();
 
 router.use(express.json());
@@ -17,9 +19,14 @@ router.get('/:imgName', (req, res) => {
   }
 });
 
-router.post('/upload/:furnitures_id', (req, res) => {
+router.post('/upload/:furnitures_id',verifyTokenUsers, (req, res) => {
   verifyFurnitureId(req, res);
 });
 
+router.get('/liste/:furnitures_id', (req, res) => {
+  const { furnitures_id } = req.params;
+  const images = getImgesURLByFurnitureId(Number(furnitures_id));
+  res.send(images);
+});
 
 export { router as imgRoutes };

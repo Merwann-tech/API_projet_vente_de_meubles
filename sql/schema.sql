@@ -54,7 +54,7 @@ CREATE TABLE furnitures (
   type_id INTEGER NOT NULL,
   price INTEGER NOT NULL,
   colors_id INTEGER NOT NULL,
-  furniture_size_cm INTEGER NOT NULL,
+  description TEXT NOT NULL,
   materials_id INTEGER NOT NULL,
   city_id INTEGER NOT NULL,
   user_id INTEGER NOT NULL,
@@ -88,5 +88,5 @@ INSERT INTO furnitures_status (status) VALUES ('vendu');
 INSERT INTO furnitures_type (name) VALUES ('Chaise');
 INSERT INTO colors (name) VALUES ('Rouge');
 INSERT INTO furnitures_materials (name) VALUES ('Bois');
-INSERT INTO furnitures (type_id, price, colors_id, furniture_size_cm, materials_id, city_id, user_id, status_id, created_at, updated_at)
-VALUES (1, 150, 1, 120, 1, 1, 1, 1, datetime('now'), datetime('now'));
+INSERT INTO furnitures (type_id, price, colors_id, description, materials_id, city_id, user_id, status_id, created_at, updated_at)
+VALUES (1, 150, 1, 'Chaise en bois rouge', 1, 1, 1, 1, datetime('now'), datetime('now'));

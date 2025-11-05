@@ -29,8 +29,8 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 function handleImageUploadRequest(
   req: Request,
   res: Response,
-  fieldName: string = "image",
-  furnitures_id: number
+  furnitures_id: number,
+  fieldName: string = "image"
 ) {
   upload.single(fieldName)(req, res, (err: any) => {
     if (err) {
@@ -61,7 +61,7 @@ function verifyNumberOfUploadedFiles(
       .status(400)
       .json({ message: "Maximum of 5 images allowed per furniture." });
   } else {
-    handleImageUploadRequest(req, res, "image", furnitureId);
+    handleImageUploadRequest(req, res, furnitureId);
   }
 }
 
@@ -86,4 +86,12 @@ export function verifyFurnitureId(req: Request, res: Response) {
   } else {
     verifyNumberOfUploadedFiles(req, res, furnitureId);
   }
+}
+
+export function getImgesURLByFurnitureId(furnitureId: number) {
+  const stmt = db.prepare(
+    "SELECT url FROM images WHERE furnitures_id = ?"
+  );
+  const rows = stmt.all(furnitureId) as { url: string }[];
+  return rows.map((row) => row.url);
 }
