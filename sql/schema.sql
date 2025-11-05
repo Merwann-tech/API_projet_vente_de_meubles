@@ -80,3 +80,13 @@ INSERT INTO cities (name) VALUES ('Paris');
 INSERT INTO users (firstname, lastname, email, password, city_id, created_at, updated_at, admin)
 VALUES ('admin', 'admin', 'admin@admin.com', '$argon2id$v=19$m=65536,t=3,p=4$k07c8Ot270p8gYQ+mPEfAg$Lc6dhSgek7E/cTk4pv4ISFBrZxdqep6uJfzkcqQZFxo', 1, datetime('now'), datetime('now'), 1);
 
+INSERT INTO furnitures_status (status) VALUES ('attente de validation');
+INSERT INTO furnitures_status (status) VALUES ('valider');
+INSERT INTO furnitures_status (status) VALUES ('refuser');
+INSERT INTO furnitures_status (status) VALUES ('vendu');
+
+INSERT INTO furnitures_type (name) VALUES ('Chaise');
+INSERT INTO colors (name) VALUES ('Rouge');
+INSERT INTO furnitures_materials (name) VALUES ('Bois');
+INSERT INTO furnitures (type_id, price, colors_id, furniture_size_cm, materials_id, city_id, user_id, status_id, created_at, updated_at)
+VALUES (1, 150, 1, 120, 1, 1, 1, 1, datetime('now'), datetime('now'));
