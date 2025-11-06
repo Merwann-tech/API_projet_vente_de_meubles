@@ -3,6 +3,7 @@ import {
   addModerator,
   getAllUsers,
   getUserById,
+    updateUser,
 } from "../services/users.services";
 import { addVolunteer } from "../services/users.services";
 import {
@@ -56,5 +57,13 @@ router.put(
     res.json(result);
   }
 );
+router.put("/token",verifyTokenUsers, async (req: Request, res: Response) => {
+    const volunteerId = Number((req as any).id);
+    const result = await updateUser(volunteerId, req.body);
+    res.json(result);
+  }
+);
 
 export { router as usersRoutes };
+
+
