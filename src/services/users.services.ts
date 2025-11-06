@@ -169,6 +169,31 @@ export function removeModerator(id: number) {
     };
 }
 
+export function addAdmin(idParam: string) {
+    const id = parseInt(idParam);
+    const stmt = db.prepare("UPDATE users SET admin = 1 WHERE id = ?");
+    stmt.run(id); 
+      const user = getUserById(id);
+    return {
+        success: `Utilisateur ${user?.firstname} ${user?.lastname} promu administrateur`,
+    };
+  }
+
+export function removeAdmin(idParam: string ,userId: number) {
+    const id = parseInt(idParam);
+    if (id === userId) {
+        return {
+            success: "Vous ne pouvez pas vous rétrograder vous-même du statut d'administrateur",
+        };
+    }
+    const stmt = db.prepare("UPDATE users SET admin = 0 WHERE id = ?"); 
+    stmt.run(id);
+        const user = getUserById(id);   
+    return {
+        success: `Utilisateur ${user?.firstname} ${user?.lastname} rétrogradé du statut d'administrateur`,
+    };
+  } 
+
 function capitalize(city: string) {
   let cityLower = city.toLowerCase();
   let cityCapitalize =
@@ -211,3 +236,5 @@ export function isValidEmail(email: string): boolean {
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailPattern.test(email);
 }
+
+

@@ -1,9 +1,11 @@
 import express, { Router, Request, Response } from "express";
 import {
+    addAdmin,
   addModerator,
   getAllUsers,
   getUserById,
   listUsersByName,
+  removeAdmin,
   removeModerator,
   updateUser,
 } from "../services/users.services";
@@ -73,6 +75,25 @@ router.put(
     res.json(result);
   }
 );
+
+router.put("/addAdmin/:id", verifyTokenAdmin, async (req: Request, res: Response) => {
+  const idParam = req.params.id;
+  if (!idParam) {
+    return res.status(400).json({ message: "User ID is required" });
+  }
+  const result = addAdmin(idParam);
+  res.json(result);
+});
+
+router.put("/removeAdmin/:id", verifyTokenAdmin, async (req: Request, res: Response) => {
+  const idParam = req.params.id;
+  if (!idParam) {
+    return res.status(400).json({ message: "User ID is required" });
+  }
+  const result = removeAdmin(idParam, (req as any).id);
+  res.json(result);
+});
+
 router.put("/token", verifyTokenUsers, async (req: Request, res: Response) => {
   const volunteerId = Number((req as any).id);
   const result = await updateUser(volunteerId, req.body);
