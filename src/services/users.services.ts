@@ -7,11 +7,6 @@ export function getAllUsers() {
   return stmt.all();
 }
 
-export function getUserById(id: number) {
-    const stmt = db.prepare("SELECT firstname, lastname, email FROM users WHERE id = ?");
-    const user = stmt.get(id);
-    return user;
-}
 
 interface VolunteerData {
     firstname: string;
@@ -47,6 +42,21 @@ export async function addVolunteer(volunteerData: VolunteerData) {
     } else {
         return { error: "Email already exists" }
     }
+};
+
+export function getUserById(id: number) {
+    const stmt = db.prepare(`
+        SELECT 
+            u.id,
+            u.firstname,
+            u.lastname,
+            u.email,
+            c.name AS city
+        FROM users AS u
+        JOIN cities AS c ON u.city_id = c.id
+        WHERE u.id = ?
+    `);
+    return stmt.get(id);
 };
 
 export function addModerator(id: number) {
