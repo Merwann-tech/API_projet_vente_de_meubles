@@ -1,8 +1,9 @@
 import express, { Application, Request, Response } from 'express';
 import { notFound } from './middlewares/notFound';
 import router from './routes';
-
+import cors from 'cors';
 const app: Application = express();
+app.use(cors());
 
 router.use(express.json());
 

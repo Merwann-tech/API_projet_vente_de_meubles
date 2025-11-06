@@ -1,7 +1,6 @@
 import e from "express";
 import { db } from "../db";
 import { hashPassword } from "./password.services";
-import { get } from "http";
 
 export function getAllUsers() {
   const stmt = db.prepare("SELECT * FROM users");
