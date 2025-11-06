@@ -3,7 +3,9 @@ import {
   addModerator,
   getAllUsers,
   getUserById,
-    updateUser,
+  listUsersByName,
+  removeModerator,
+  updateUser,
 } from "../services/users.services";
 import { addVolunteer } from "../services/users.services";
 import {
@@ -45,7 +47,7 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 router.put(
-  "/moderator/:id",
+  "/addModerator/:id",
   verifyTokenAdmin,
   async (req: Request, res: Response) => {
     const idParam = req.params.id;
@@ -57,13 +59,33 @@ router.put(
     res.json(result);
   }
 );
-router.put("/token",verifyTokenUsers, async (req: Request, res: Response) => {
-    const volunteerId = Number((req as any).id);
-    const result = await updateUser(volunteerId, req.body);
+
+router.put(
+  "/removeModerator/:id",
+  verifyTokenAdmin,
+  async (req: Request, res: Response) => {
+    const idParam = req.params.id;
+    if (!idParam) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+    const id = parseInt(idParam);
+    const result = removeModerator(id);
     res.json(result);
   }
 );
+router.put("/token", verifyTokenUsers, async (req: Request, res: Response) => {
+  const volunteerId = Number((req as any).id);
+  const result = await updateUser(volunteerId, req.body);
+  res.json(result);
+});
+router.get("/name/:name", verifyTokenAdmin, (req: Request, res: Response) => {
+  const nameParam = req.params.name;
+  const users = listUsersByName(nameParam);
+  res.status(200).json(users);
+});
+router.get("/name", verifyTokenAdmin, (req: Request, res: Response) => {
+  const users = listUsersByName("");
+  res.status(200).json(users);
+});
 
 export { router as usersRoutes };
-
-

@@ -110,6 +110,42 @@ export async function updateUser(
   }
 }
 
+export function listUsersByName(name: string | undefined) {
+    if (!name) {
+        // Retourne tous les utilisateurs si name est undefined
+        const users = db.prepare(`
+            SELECT 
+            u.id,
+            u.firstname,
+            u.lastname,
+            u.email,
+            c.name AS city,
+            u.moderator,
+            u.admin
+            FROM users AS u
+            JOIN cities AS c ON u.city_id = c.id
+            LIMIT 6
+        `);
+        return users.all();
+    }
+    const users = db.prepare(`
+        SELECT 
+            u.id,
+            u.firstname,
+            u.lastname,
+            u.email,
+            u.moderator,
+            u.admin,
+            c.name AS city
+        FROM users AS u
+        JOIN cities AS c ON u.city_id = c.id
+        WHERE LOWER(u.firstname) LIKE LOWER(?)
+            OR LOWER(u.lastname) LIKE LOWER(?)
+        LIMIT 6
+    `);
+    return users.all(`%${name}%`, `%${name}%`);
+};
+
 function getemail(Id: number) {
   const stmt = db.prepare("SELECT email FROM users WHERE id = ?");
   const volunteer = stmt.get(Id);
@@ -119,9 +155,18 @@ export function addModerator(id: number) {
   const stmt = db.prepare("UPDATE users SET moderator = 1 WHERE id = ?");
   stmt.run(id);
   const user = getUserById(id);
-  return {
-    success: `User ${user?.firstname} ${user?.lastname} promoted to moderator`,
-  };
+return {
+    success: `Utilisateur ${user?.firstname} ${user?.lastname} promu modérateur`,
+};
+}
+
+export function removeModerator(id: number) {
+  const stmt = db.prepare("UPDATE users SET moderator = 0 WHERE id = ?");
+  stmt.run(id); 
+    const user = getUserById(id);
+    return {
+        success: `Utilisateur ${user?.firstname} ${user?.lastname} rétrogradé du statut de modérateur`,
+    };
 }
 
 function capitalize(city: string) {
