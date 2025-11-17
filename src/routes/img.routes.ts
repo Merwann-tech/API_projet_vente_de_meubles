@@ -19,9 +19,10 @@ router.get('/:imgName', (req, res) => {
   }
 });
 
-router.post('/upload/:furnitures_id',verifyTokenUsers, (req, res) => {
-  verifyFurnitureId(req, res);
-});
+// router.post('/upload/:furnitures_id',verifyTokenUsers, (req, res) => {
+//   console.log(req.file)
+//   verifyFurnitureId(req, res);
+// });
 
 router.get('/liste/:furnitures_id', (req, res) => {
   const { furnitures_id } = req.params;

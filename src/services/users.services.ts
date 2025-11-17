@@ -194,7 +194,7 @@ export function removeAdmin(idParam: string ,userId: number) {
     };
   } 
 
-function capitalize(city: string) {
+export function capitalize(city: string) {
   let cityLower = city.toLowerCase();
   let cityCapitalize =
     (cityLower[0] as string).toUpperCase() + cityLower.slice(1);

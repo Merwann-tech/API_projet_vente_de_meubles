@@ -1,5 +1,6 @@
 import e from "express";
 import { db } from "../db";
+import {capitalize} from "./users.services";
 
 interface FurnitureData {
     type: string;
@@ -8,44 +9,47 @@ interface FurnitureData {
     city: string;
     price: number;
     description: string;
-    user_id: number;
+    title: string;
 }
 
-export async function addfurniture(data: FurnitureData) {
+export async function addfurniture(data: FurnitureData,id: number) {
     db.exec(`
         INSERT INTO furnitures_type (name)
-        SELECT '${data.type}'
-        WHERE NOT EXISTS (SELECT 1 FROM furnitures_type WHERE name = '${data.type}');`
+        SELECT '${capitalize(data.type)}'
+        WHERE NOT EXISTS (SELECT 1 FROM furnitures_type WHERE name = '${capitalize(data.type)}');`
     );
     db.exec(`
         INSERT INTO colors (name)
-        SELECT '${data.colors}'
-        WHERE NOT EXISTS (SELECT 1 FROM colors WHERE name = '${data.colors}');`
+        SELECT '${capitalize(data.colors)}'
+        WHERE NOT EXISTS (SELECT 1 FROM colors WHERE name = '${capitalize(data.colors)}');`
     );
     db.exec(`
         INSERT INTO furnitures_materials (name)
-        SELECT '${data.materials}'
-        WHERE NOT EXISTS (SELECT 1 FROM furnitures_materials WHERE name = '${data.materials}');`
+        SELECT '${capitalize(data.materials)}'
+        WHERE NOT EXISTS (SELECT 1 FROM furnitures_materials WHERE name = '${capitalize(data.materials)}');`
     );
     db.exec(`
         INSERT INTO cities (name)
-        SELECT '${data.city}'
-        WHERE NOT EXISTS (SELECT 1 FROM cities WHERE name = '${data.city}');`)
-    db.exec(`
-        INSERT INTO furnitures (type_id, price, colors_id, furniture_size_cm, materials_id, city_id, user_id, status_id, created_at, updated_at)
+        SELECT '${capitalize(data.city)}'
+        WHERE NOT EXISTS (SELECT 1 FROM cities WHERE name = '${capitalize(data.city)}');`)
+    const stmt = db.prepare(`
+        INSERT INTO furnitures (type_id, title, price, colors_id, description, materials_id, city_id, user_id, status_id, created_at, updated_at)
         VALUES (
-            (SELECT id FROM furnitures_type WHERE name = '${data.type}'),
+            (SELECT id FROM furnitures_type WHERE name = '${capitalize(data.type)}'),
+            '${data.title}',
             ${data.price},
-            (SELECT id FROM colors WHERE name = '${data.colors}'),
+            (SELECT id FROM colors WHERE name = '${capitalize(data.colors)}'),
             '${data.description}',
-            (SELECT id FROM furnitures_materials WHERE name = '${data.materials}'),
-            (SELECT id FROM cities WHERE name = '${data.city}'),
-            ${data.user_id},
+            (SELECT id FROM furnitures_materials WHERE name = '${capitalize(data.materials)}'),
+            (SELECT id FROM cities WHERE name = '${capitalize(data.city)}'),
+            ${id},
             1,
             datetime('now'),
             datetime('now')
-        );`,)
-    return { success: "furniture add" }
+        );
+    `);
+    const result = stmt.run();
+    return result.lastInsertRowid ;
 }
 
 export function validateFurniture(id: number) {

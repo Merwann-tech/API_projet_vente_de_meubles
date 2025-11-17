@@ -49,8 +49,10 @@ CREATE TABLE users (
   FOREIGN KEY (city_id) REFERENCES cities(id)
 );
 
+
 CREATE TABLE furnitures (
   id INTEGER PRIMARY KEY NOT NULL,
+  title TEXT NOT NULL,
   type_id INTEGER NOT NULL,
   price INTEGER NOT NULL,
   colors_id INTEGER NOT NULL,
@@ -88,5 +90,5 @@ INSERT INTO furnitures_status (status) VALUES ('vendu');
 INSERT INTO furnitures_type (name) VALUES ('Chaise');
 INSERT INTO colors (name) VALUES ('Rouge');
 INSERT INTO furnitures_materials (name) VALUES ('Bois');
-INSERT INTO furnitures (type_id, price, colors_id, description, materials_id, city_id, user_id, status_id, created_at, updated_at)
-VALUES (1, 150, 1, 'Chaise en bois rouge', 1, 1, 1, 1, datetime('now'), datetime('now'));
+INSERT INTO furnitures (type_id,title, price, colors_id, description, materials_id, city_id, user_id, status_id, created_at, updated_at)
+VALUES (1,'Chaise rouge', 150, 1, 'Chaise en bois rouge', 1, 1, 1, 1, datetime('now'), datetime('now'));
