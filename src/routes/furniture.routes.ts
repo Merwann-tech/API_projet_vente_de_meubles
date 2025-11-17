@@ -21,14 +21,14 @@ router.get("/", async (req: Request, res: Response) => {
   res.send(furnitures);
 });
 
-router.get("/moderator/:status/:search", async (req: Request, res: Response) => {
+router.get("/moderator/:status/:search",verifyTokenModerator, async (req: Request, res: Response) => {
     const status = req.params.status !== undefined ? req.params.status : "all";
     const search = req.params.search !== undefined ? req.params.search : "";
     const furnitures = getAllmoderatorFurnitures(status, search);
     res.send(furnitures);
 });
 
-router.get("/moderator/:status", async (req: Request, res: Response) => {
+router.get("/moderator/:status",verifyTokenModerator, async (req: Request, res: Response) => {
     const status = req.params.status !== undefined ? req.params.status : "all";
     const search = "";
     const furnitures = getAllmoderatorFurnitures(status, search);

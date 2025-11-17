@@ -53,6 +53,20 @@ export async function addfurniture(data: FurnitureData,id: number) {
 }
 
 export function validateFurniture(id: number) {
+    const stmt = db.prepare(`
+        SELECT status_id FROM furnitures WHERE id = ?;
+    `);
+    const row = stmt.get(id);
+
+    const venduStatusIdStmt = db.prepare(`
+        SELECT id FROM furnitures_status WHERE status = 'vendu';
+    `);
+    const venduStatus = venduStatusIdStmt.get();
+
+    if (row && venduStatus && row.status_id === venduStatus.id) {
+        throw new Error("Impossible de valider : le meuble est déjà vendu.");
+    }
+
     db.exec(`
         UPDATE furnitures
         SET status_id = (SELECT id FROM furnitures_status WHERE status = 'valider')
@@ -60,6 +74,20 @@ export function validateFurniture(id: number) {
     `);
 }
 export function rejectFurniture(id: number) {
+    const stmt = db.prepare(`
+        SELECT status_id FROM furnitures WHERE id = ?;
+    `);
+    const row = stmt.get(id);
+
+    const venduStatusIdStmt = db.prepare(`
+        SELECT id FROM furnitures_status WHERE status = 'vendu';
+    `);
+    const venduStatus = venduStatusIdStmt.get();
+
+    if (row && venduStatus && row.status_id === venduStatus.id) {
+        throw new Error("Impossible de refuser : le meuble est déjà vendu.");
+    }
+
     db.exec(`
         UPDATE furnitures
         SET status_id = (SELECT id FROM furnitures_status WHERE status = 'refuser')
@@ -96,6 +124,7 @@ export function getAllmoderatorFurnitures(status: string, search: string) {
     let query = `
         SELECT 
             f.id,
+            f.title,
             ft.name AS type,
             f.price,
             c.name AS color,
@@ -127,9 +156,9 @@ export function getAllmoderatorFurnitures(status: string, search: string) {
     }
 
     if (search && search.trim() !== "") {
-        conditions.push(`(f.title LIKE ? OR f.description LIKE ? OR ft.name LIKE ? OR c.name LIKE ? OR fm.name LIKE ? OR ci.name LIKE ?)`);
+        conditions.push(`(f.title LIKE ? OR f.description LIKE ? OR ft.name LIKE ? OR c.name LIKE ? OR fm.name LIKE ? OR ci.name LIKE ? Or u.email LIKE ? OR f.price LIKE ?)`);
         const searchParam = `%${search}%`;
-        params.push(searchParam, searchParam, searchParam, searchParam, searchParam, searchParam);
+        params.push(searchParam, searchParam, searchParam, searchParam, searchParam, searchParam , searchParam, searchParam);
     }
 
     if (conditions.length > 0) {
