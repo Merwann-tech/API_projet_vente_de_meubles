@@ -5,6 +5,8 @@ import {
   rejectFurniture,
   validateFurniture,
     getAllmoderatorFurnitures,
+    getAllUsersFurnitures,
+    deleteFurnitureById,
 } from "../services/furniture.service";
 const router = Router();
 router.use(express.json());
@@ -34,6 +36,41 @@ router.get("/moderator/:status",verifyTokenModerator, async (req: Request, res: 
     const furnitures = getAllmoderatorFurnitures(status, search);
     res.send(furnitures);
 });
+
+router.get("/users/:status/:search",verifyTokenUsers, async (req: Request, res: Response) => {
+    const status = req.params.status !== undefined ? req.params.status : "all";
+    const search = req.params.search !== undefined ? req.params.search : "";
+    const furnitures = getAllUsersFurnitures(status, search, Number((req as any).id));
+    res.send(furnitures);
+});
+
+router.get("/users/:status",verifyTokenUsers, async (req: Request, res: Response) => {
+    const status = req.params.status !== undefined ? req.params.status : "all";
+    const search = "";
+    const furnitures = getAllUsersFurnitures(status, search, Number((req as any).id));
+    res.send(furnitures);
+});
+
+router.delete("/users/:id",verifyTokenUsers, async (req: Request, res: Response) => {
+    const response = deleteFurnitureById(Number(req.params.id), Number((req as any).id));
+    if (response.success) {
+        res.status(200).send(response);
+    } else {
+        res.status(404).send(response);
+    }
+});
+
+router.delete("/moderator/:id",verifyTokenModerator, async (req: Request, res: Response) => {
+    const response = deleteFurnitureById(Number(req.params.id), Number((req as any).id),true);
+    if (response.success) {
+        res.status(200).send(response);
+    } else {
+        res.status(404).send(response);
+    }
+});
+
+
+
 
 router.post(
   "/",

@@ -1,46 +1,57 @@
 import e from "express";
 import { db } from "../db";
-import {capitalize} from "./users.services";
+import { capitalize } from "./users.services";
+import fs from "fs";
+import path from "path";
 
 interface FurnitureData {
-    type: string;
-    colors: string;
-    materials: string;
-    city: string;
-    price: number;
-    description: string;
-    title: string;
+  type: string;
+  colors: string;
+  materials: string;
+  city: string;
+  price: number;
+  description: string;
+  title: string;
 }
 
-export async function addfurniture(data: FurnitureData,id: number) {
-    db.exec(`
+export async function addfurniture(data: FurnitureData, id: number) {
+  db.exec(`
         INSERT INTO furnitures_type (name)
         SELECT '${capitalize(data.type)}'
-        WHERE NOT EXISTS (SELECT 1 FROM furnitures_type WHERE name = '${capitalize(data.type)}');`
-    );
-    db.exec(`
+        WHERE NOT EXISTS (SELECT 1 FROM furnitures_type WHERE name = '${capitalize(
+          data.type
+        )}');`);
+  db.exec(`
         INSERT INTO colors (name)
         SELECT '${capitalize(data.colors)}'
-        WHERE NOT EXISTS (SELECT 1 FROM colors WHERE name = '${capitalize(data.colors)}');`
-    );
-    db.exec(`
+        WHERE NOT EXISTS (SELECT 1 FROM colors WHERE name = '${capitalize(
+          data.colors
+        )}');`);
+  db.exec(`
         INSERT INTO furnitures_materials (name)
         SELECT '${capitalize(data.materials)}'
-        WHERE NOT EXISTS (SELECT 1 FROM furnitures_materials WHERE name = '${capitalize(data.materials)}');`
-    );
-    db.exec(`
+        WHERE NOT EXISTS (SELECT 1 FROM furnitures_materials WHERE name = '${capitalize(
+          data.materials
+        )}');`);
+  db.exec(`
         INSERT INTO cities (name)
         SELECT '${capitalize(data.city)}'
-        WHERE NOT EXISTS (SELECT 1 FROM cities WHERE name = '${capitalize(data.city)}');`)
-    const stmt = db.prepare(`
+        WHERE NOT EXISTS (SELECT 1 FROM cities WHERE name = '${capitalize(
+          data.city
+        )}');`);
+  const stmt = db.prepare(`
         INSERT INTO furnitures (type_id, title, price, colors_id, description, materials_id, city_id, user_id, status_id, created_at, updated_at)
         VALUES (
-            (SELECT id FROM furnitures_type WHERE name = '${capitalize(data.type)}'),
+            (SELECT id FROM furnitures_type WHERE name = '${capitalize(
+              data.type
+            )}'),
             '${data.title}',
             ${data.price},
             (SELECT id FROM colors WHERE name = '${capitalize(data.colors)}'),
             '${data.description}',
-            (SELECT id FROM furnitures_materials WHERE name = '${capitalize(data.materials)}'),
+            (SELECT id FROM furnitures_materials WHERE name = '${capitalize(
+              data.materials
+            )}'),
             (SELECT id FROM cities WHERE name = '${capitalize(data.city)}'),
             ${id},
             1,
@@ -48,47 +59,47 @@ export async function addfurniture(data: FurnitureData,id: number) {
             datetime('now')
         );
     `);
-    const result = stmt.run();
-    return result.lastInsertRowid ;
+  const result = stmt.run();
+  return result.lastInsertRowid;
 }
 
 export function validateFurniture(id: number) {
-    const stmt = db.prepare(`
+  const stmt = db.prepare(`
         SELECT status_id FROM furnitures WHERE id = ?;
     `);
-    const row = stmt.get(id);
+  const row = stmt.get(id);
 
-    const venduStatusIdStmt = db.prepare(`
+  const venduStatusIdStmt = db.prepare(`
         SELECT id FROM furnitures_status WHERE status = 'vendu';
     `);
-    const venduStatus = venduStatusIdStmt.get();
+  const venduStatus = venduStatusIdStmt.get();
 
-    if (row && venduStatus && row.status_id === venduStatus.id) {
-        throw new Error("Impossible de valider : le meuble est déjà vendu.");
-    }
+  if (row && venduStatus && row.status_id === venduStatus.id) {
+    throw new Error("Impossible de valider : le meuble est déjà vendu.");
+  }
 
-    db.exec(`
+  db.exec(`
         UPDATE furnitures
         SET status_id = (SELECT id FROM furnitures_status WHERE status = 'valider')
         WHERE id = ${id};
     `);
 }
 export function rejectFurniture(id: number) {
-    const stmt = db.prepare(`
+  const stmt = db.prepare(`
         SELECT status_id FROM furnitures WHERE id = ?;
     `);
-    const row = stmt.get(id);
+  const row = stmt.get(id);
 
-    const venduStatusIdStmt = db.prepare(`
+  const venduStatusIdStmt = db.prepare(`
         SELECT id FROM furnitures_status WHERE status = 'vendu';
     `);
-    const venduStatus = venduStatusIdStmt.get();
+  const venduStatus = venduStatusIdStmt.get();
 
-    if (row && venduStatus && row.status_id === venduStatus.id) {
-        throw new Error("Impossible de refuser : le meuble est déjà vendu.");
-    }
+  if (row && venduStatus && row.status_id === venduStatus.id) {
+    throw new Error("Impossible de refuser : le meuble est déjà vendu.");
+  }
 
-    db.exec(`
+  db.exec(`
         UPDATE furnitures
         SET status_id = (SELECT id FROM furnitures_status WHERE status = 'refuser')
         WHERE id = ${id};
@@ -96,7 +107,7 @@ export function rejectFurniture(id: number) {
 }
 
 export function getAllValidatedFurnitures() {
-    const stmt = db.prepare(`
+  const stmt = db.prepare(`
         SELECT 
             f.id,
             ft.name AS type,
@@ -117,11 +128,11 @@ export function getAllValidatedFurnitures() {
         JOIN furnitures_status fs ON f.status_id = fs.id
         WHERE f.status_id = (SELECT id FROM furnitures_status WHERE status = 'valider');
     `);
-    return stmt.all();
+  return stmt.all();
 }
 
 export function getAllmoderatorFurnitures(status: string, search: string) {
-    let query = `
+  let query = `
         SELECT 
             f.id,
             f.title,
@@ -147,26 +158,158 @@ export function getAllmoderatorFurnitures(status: string, search: string) {
         LEFT JOIN images i ON i.furnitures_id = f.id
     `;
 
-    const params: any[] = [];
-    const conditions: string[] = [];
+  const params: any[] = [];
+  const conditions: string[] = [];
 
-    if (status !== "all") {
-        conditions.push(`f.status_id = (SELECT id FROM furnitures_status WHERE status = ?)`);
-        params.push(status);
+  if (status !== "all") {
+    conditions.push(
+      `f.status_id = (SELECT id FROM furnitures_status WHERE status = ?)`
+    );
+    params.push(status);
+  }
+
+  if (search && search.trim() !== "") {
+    conditions.push(
+      `(f.title LIKE ? OR f.description LIKE ? OR ft.name LIKE ? OR c.name LIKE ? OR fm.name LIKE ? OR ci.name LIKE ? Or u.email LIKE ? OR f.price LIKE ?)`
+    );
+    const searchParam = `%${search}%`;
+    params.push(
+      searchParam,
+      searchParam,
+      searchParam,
+      searchParam,
+      searchParam,
+      searchParam,
+      searchParam,
+      searchParam
+    );
+  }
+
+  if (conditions.length > 0) {
+    query += " WHERE " + conditions.join(" AND ");
+  }
+
+  query += " GROUP BY f.id ORDER BY f.created_at DESC LIMIT 25 ;";
+
+  const stmt = db.prepare(query);
+  return stmt.all(...params);
+}
+
+export function getAllUsersFurnitures(
+  status: string,
+  search: string,
+  user_id: number
+) {
+  let query = `
+        SELECT 
+            f.id,
+            f.title,
+            ft.name AS type,
+            f.price,
+            c.name AS color,
+            f.description,
+            fm.name AS material,
+            ci.name AS city,
+            f.user_id,
+            u.email AS user_mail,
+            fs.status,
+            f.created_at,
+            f.updated_at,
+            GROUP_CONCAT(i.url) AS images
+        FROM furnitures f
+        JOIN furnitures_type ft ON f.type_id = ft.id
+        JOIN colors c ON f.colors_id = c.id
+        JOIN furnitures_materials fm ON f.materials_id = fm.id
+        JOIN cities ci ON f.city_id = ci.id
+        JOIN furnitures_status fs ON f.status_id = fs.id
+        JOIN users u ON f.user_id = u.id
+        LEFT JOIN images i ON i.furnitures_id = f.id
+    `;
+
+  const params: any[] = [];
+  const conditions: string[] = [];
+
+  conditions.push(`f.user_id = ?`);
+  params.push(user_id);
+
+  if (status !== "all") {
+    conditions.push(
+      `f.status_id = (SELECT id FROM furnitures_status WHERE status = ?)`
+    );
+    params.push(status);
+  }
+
+  if (search && search.trim() !== "") {
+    conditions.push(
+      `(f.title LIKE ? OR f.description LIKE ? OR ft.name LIKE ? OR c.name LIKE ? OR fm.name LIKE ? OR ci.name LIKE ? Or u.email LIKE ? OR f.price LIKE ?)`
+    );
+    const searchParam = `%${search}%`;
+    params.push(
+      searchParam,
+      searchParam,
+      searchParam,
+      searchParam,
+      searchParam,
+      searchParam,
+      searchParam,
+      searchParam
+    );
+  }
+
+  if (conditions.length > 0) {
+    query += " WHERE " + conditions.join(" AND ");
+  }
+
+  query += " GROUP BY f.id ORDER BY f.created_at DESC LIMIT 25 ;";
+
+  const stmt = db.prepare(query);
+  return stmt.all(...params);
+}
+
+export function deleteFurnitureById(
+  id: number,
+  user_id: number,
+  isModerator: boolean = false
+) {
+  if (!isModerator) {
+    const furnitureStmt = db.prepare(
+      "SELECT user_id FROM furnitures WHERE id = ?"
+    );
+    const furniture = furnitureStmt.get(id);
+    if (!furniture) {
+      return { error: `Le meuble avec l'id ${id} n'existe pas.` };
+    } else if (furniture.user_id !== user_id) {
+      return { error: `User is not authorized to delete this furniture.` };
     }
+  }
+  const furnitureStmt = db.prepare(
+      "SELECT user_id FROM furnitures WHERE id = ?"
+    );
+  const furniture = furnitureStmt.get(id);
+  if (!furniture) {
+      return { error: `Le meuble avec l'id ${id} n'existe pas.` };
+  }
+  const stmtGetImages = db.prepare(
+    "SELECT url FROM images WHERE furnitures_id = ?"
+  );
+  const images = stmtGetImages.all(id);
 
-    if (search && search.trim() !== "") {
-        conditions.push(`(f.title LIKE ? OR f.description LIKE ? OR ft.name LIKE ? OR c.name LIKE ? OR fm.name LIKE ? OR ci.name LIKE ? Or u.email LIKE ? OR f.price LIKE ?)`);
-        const searchParam = `%${search}%`;
-        params.push(searchParam, searchParam, searchParam, searchParam, searchParam, searchParam , searchParam, searchParam);
+  images.forEach((img: Record<string, any>) => {
+    const imagePath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "public",
+      img.url as string
+    );
+    if (fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
     }
+  });
+  const stmtImg = db.prepare("DELETE FROM images WHERE furnitures_id = ?");
+  stmtImg.run(id);
 
-    if (conditions.length > 0) {
-        query += " WHERE " + conditions.join(" AND ");
-    }
-
-    query += " GROUP BY f.id ORDER BY f.created_at DESC LIMIT 25 ;";
-
-    const stmt = db.prepare(query);
-    return stmt.all(...params);
+  const stmt = db.prepare("DELETE FROM furnitures WHERE id = ?");
+  stmt.run(id);
+  return { success: `Le meuble avec l'id ${id} a été supprimé avec succès.` };
 }

@@ -24,10 +24,10 @@ router.get('/:imgName', (req, res) => {
 //   verifyFurnitureId(req, res);
 // });
 
-router.get('/liste/:furnitures_id', (req, res) => {
-  const { furnitures_id } = req.params;
-  const images = getImgesURLByFurnitureId(Number(furnitures_id));
-  res.send(images);
-});
+// router.get('/liste/:furnitures_id', (req, res) => {
+//   const { furnitures_id } = req.params;
+//   const images = getImgesURLByFurnitureId(Number(furnitures_id));
+//   res.send(images);
+// });
 
 export { router as imgRoutes };
