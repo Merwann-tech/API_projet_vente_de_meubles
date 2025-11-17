@@ -91,3 +91,53 @@ export function getAllValidatedFurnitures() {
     `);
     return stmt.all();
 }
+
+export function getAllmoderatorFurnitures(status: string, search: string) {
+    let query = `
+        SELECT 
+            f.id,
+            ft.name AS type,
+            f.price,
+            c.name AS color,
+            f.description,
+            fm.name AS material,
+            ci.name AS city,
+            f.user_id,
+            u.email AS user_mail,
+            fs.status,
+            f.created_at,
+            f.updated_at,
+            GROUP_CONCAT(i.url) AS images
+        FROM furnitures f
+        JOIN furnitures_type ft ON f.type_id = ft.id
+        JOIN colors c ON f.colors_id = c.id
+        JOIN furnitures_materials fm ON f.materials_id = fm.id
+        JOIN cities ci ON f.city_id = ci.id
+        JOIN furnitures_status fs ON f.status_id = fs.id
+        JOIN users u ON f.user_id = u.id
+        LEFT JOIN images i ON i.furnitures_id = f.id
+    `;
+
+    const params: any[] = [];
+    const conditions: string[] = [];
+
+    if (status !== "all") {
+        conditions.push(`f.status_id = (SELECT id FROM furnitures_status WHERE status = ?)`);
+        params.push(status);
+    }
+
+    if (search && search.trim() !== "") {
+        conditions.push(`(f.title LIKE ? OR f.description LIKE ? OR ft.name LIKE ? OR c.name LIKE ? OR fm.name LIKE ? OR ci.name LIKE ?)`);
+        const searchParam = `%${search}%`;
+        params.push(searchParam, searchParam, searchParam, searchParam, searchParam, searchParam);
+    }
+
+    if (conditions.length > 0) {
+        query += " WHERE " + conditions.join(" AND ");
+    }
+
+    query += " GROUP BY f.id ORDER BY f.created_at DESC LIMIT 25 ;";
+
+    const stmt = db.prepare(query);
+    return stmt.all(...params);
+}

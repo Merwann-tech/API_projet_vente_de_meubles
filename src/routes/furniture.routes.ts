@@ -4,6 +4,7 @@ import {
   getAllValidatedFurnitures,
   rejectFurniture,
   validateFurniture,
+    getAllmoderatorFurnitures,
 } from "../services/furniture.service";
 const router = Router();
 router.use(express.json());
@@ -17,8 +18,21 @@ import { upload,verifyFurnitureId } from "../services/img.service";
 
 router.get("/", async (req: Request, res: Response) => {
   const furnitures = await getAllValidatedFurnitures();
-  console.log(furnitures);
   res.send(furnitures);
+});
+
+router.get("/moderator/:status/:search", async (req: Request, res: Response) => {
+    const status = req.params.status !== undefined ? req.params.status : "all";
+    const search = req.params.search !== undefined ? req.params.search : "";
+    const furnitures = getAllmoderatorFurnitures(status, search);
+    res.send(furnitures);
+});
+
+router.get("/moderator/:status", async (req: Request, res: Response) => {
+    const status = req.params.status !== undefined ? req.params.status : "all";
+    const search = "";
+    const furnitures = getAllmoderatorFurnitures(status, search);
+    res.send(furnitures);
 });
 
 router.post(
