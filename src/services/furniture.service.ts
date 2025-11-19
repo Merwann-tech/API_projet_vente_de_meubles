@@ -106,29 +106,102 @@ export function rejectFurniture(id: number) {
     `);
 }
 
-export function getAllValidatedFurnitures() {
-  const stmt = db.prepare(`
-        SELECT 
-            f.id,
-            ft.name AS type,
-            f.price,
-            c.name AS color,
-            f.description,
-            fm.name AS material,
-            ci.name AS city,
-            f.user_id,
-            fs.status,
-            f.created_at,
-            f.updated_at
-        FROM furnitures f
-        JOIN furnitures_type ft ON f.type_id = ft.id
-        JOIN colors c ON f.colors_id = c.id
-        JOIN furnitures_materials fm ON f.materials_id = fm.id
-        JOIN cities ci ON f.city_id = ci.id
-        JOIN furnitures_status fs ON f.status_id = fs.id
-        WHERE f.status_id = (SELECT id FROM furnitures_status WHERE status = 'valider');
-    `);
-  return stmt.all();
+export function getAllValidatedFurnitures(
+  search?: string | string[],
+  type?: string | string[],
+  color?: string | string[],
+  material?: string | string[],
+  city?: string | string[],
+  priceMin?: number,
+  priceMax?: number
+) {
+  let query = `
+    SELECT 
+      f.id,
+      f.title,
+      ft.name AS type,
+      f.price,
+      c.name AS color,
+      f.description,
+      fm.name AS material,
+      ci.name AS city,
+      f.user_id,
+      fs.status,
+      f.created_at,
+      f.updated_at,
+      GROUP_CONCAT(i.url) AS images
+    FROM furnitures f
+    JOIN furnitures_type ft ON f.type_id = ft.id
+    JOIN colors c ON f.colors_id = c.id
+    JOIN furnitures_materials fm ON f.materials_id = fm.id
+    JOIN cities ci ON f.city_id = ci.id
+    JOIN furnitures_status fs ON f.status_id = fs.id
+    LEFT JOIN images i ON i.furnitures_id = f.id
+    WHERE f.status_id = (SELECT id FROM furnitures_status WHERE status = 'valider')
+  `;
+
+  const params: any[] = [];
+
+  if (
+    search &&
+    (Array.isArray(search) ? search.length > 0 : search.trim() !== "")
+  ) {
+    const searchArr = Array.isArray(search) ? search : [search];
+    const searchConditions = searchArr.map(
+      () => `
+      (
+        f.title LIKE ? OR 
+        f.description LIKE ? OR 
+        ft.name LIKE ? OR 
+        c.name LIKE ? OR 
+        fm.name LIKE ? OR 
+        ci.name LIKE ?
+      )
+    `
+    );
+    query += " AND (" + searchConditions.join(" OR ") + ")";
+    searchArr.forEach((s) => {
+      const searchParam = `%${s}%`;
+      params.push(
+        searchParam,
+        searchParam,
+        searchParam,
+        searchParam,
+        searchParam,
+        searchParam
+      );
+    });
+  }
+
+  const addArrayOrStringFilter = (
+    value: string | string[] | undefined,
+    alias: string
+  ) => {
+    if (value && (Array.isArray(value) ? value.length > 0 : value !== "all")) {
+      const arr = Array.isArray(value) ? value : [value];
+      query += ` AND (${arr.map(() => `${alias}.name = ?`).join(" OR ")})`;
+      params.push(...arr);
+    }
+  };
+
+  addArrayOrStringFilter(type, "ft");
+  addArrayOrStringFilter(color, "c");
+  addArrayOrStringFilter(material, "fm");
+  addArrayOrStringFilter(city, "ci");
+
+  if (priceMin !== undefined && priceMin !== null) {
+    query += " AND f.price >= ?";
+    params.push(priceMin);
+  }
+  if (priceMax !== undefined && priceMax !== null) {
+    query += " AND f.price <= ?";
+    params.push(priceMax);
+  }
+
+  query += " GROUP BY f.id ORDER BY f.created_at DESC LIMIT 25;";
+
+  const stmt = db.prepare(query);
+  return stmt.all(...params);
 }
 
 export function getAllmoderatorFurnitures(status: string, search: string) {
@@ -283,11 +356,11 @@ export function deleteFurnitureById(
     }
   }
   const furnitureStmt = db.prepare(
-      "SELECT user_id FROM furnitures WHERE id = ?"
-    );
+    "SELECT user_id FROM furnitures WHERE id = ?"
+  );
   const furniture = furnitureStmt.get(id);
   if (!furniture) {
-      return { error: `Le meuble avec l'id ${id} n'existe pas.` };
+    return { error: `Le meuble avec l'id ${id} n'existe pas.` };
   }
   const stmtGetImages = db.prepare(
     "SELECT url FROM images WHERE furnitures_id = ?"
@@ -360,4 +433,3 @@ export function getMaterialListe() {
   `);
   return stmt.all();
 }
-

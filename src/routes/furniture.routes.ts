@@ -22,10 +22,43 @@ import {
 } from "../middlewares/auth";
 import { upload,verifyFurnitureId } from "../services/img.service";
 
-// router.get("/", async (req: Request, res: Response) => {
-//   const furnitures = await getAllValidatedFurnitures();
-//   res.send(furnitures);
-// });
+
+router.get("/search", async (req: Request, res: Response) => {
+  const search = req.query.query ? String(req.query.query) : "";
+  const type = req.query.type
+    ? Array.isArray(req.query.type)
+      ? req.query.type.map(String)
+      : [String(req.query.type)]
+    : [];
+  const color = req.query.color
+    ? Array.isArray(req.query.color)
+      ? req.query.color.map(String)
+      : [String(req.query.color)]
+    : [];
+  const material = req.query.material
+    ? Array.isArray(req.query.material)
+      ? req.query.material.map(String)
+      : [String(req.query.material)]
+    : [];
+  const city = req.query.city
+    ? Array.isArray(req.query.city)
+      ? req.query.city.map(String)
+      : [String(req.query.city)]
+    : [];
+  const priceMin = req.query.priceMin ? Number(req.query.priceMin) : undefined;
+  const priceMax = req.query.priceMax ? Number(req.query.priceMax) : undefined;
+
+  const furnitures = await getAllValidatedFurnitures(
+    search,
+    type,
+    color,
+    material,
+    city,
+    priceMin,
+    priceMax,
+  );
+  res.send(furnitures);
+});
 
 router.get("/typeListe", async (req: Request, res: Response) => {
    const response = getTypeListe()
