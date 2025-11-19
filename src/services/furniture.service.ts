@@ -402,7 +402,7 @@ export function getCityListe() {
   const stmt = db.prepare(`
     SELECT c.name 
     FROM cities c
-    JOIN furnitures f ON f.type_id = c.id
+    JOIN furnitures f ON f.city_id = c.id
     JOIN furnitures_status fs ON f.status_id = fs.id
     WHERE fs.status = 'valider'
     GROUP BY c.name;
@@ -414,7 +414,7 @@ export function getColorListe() {
   const stmt = db.prepare(`
     SELECT c.name 
     FROM colors c
-    JOIN furnitures f ON f.type_id = c.id
+    JOIN furnitures f ON f.colors_id = c.id
     JOIN furnitures_status fs ON f.status_id = fs.id
     WHERE fs.status = 'valider'
     GROUP BY c.name;
@@ -426,7 +426,7 @@ export function getMaterialListe() {
   const stmt = db.prepare(`
     SELECT fm.name 
     FROM furnitures_materials fm
-    JOIN furnitures f ON f.type_id = fm.id
+    JOIN furnitures f ON f.materials_id = fm.id
     JOIN furnitures_status fs ON f.status_id = fs.id
     WHERE fs.status = 'valider'
     GROUP BY fm.name;
