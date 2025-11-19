@@ -52,7 +52,7 @@ export function handleImageUploadRequest(
   furnitures_id: number,
 ) {
   if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-    return res.status(400).json({ message: "Aucun fichier envoyé." });
+    return res.status(200).json({ message: "Aucun fichier envoyé,annonce enregistrée." });
   }
 
   const files = req.files as Express.Multer.File[];

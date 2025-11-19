@@ -356,12 +356,13 @@ export function deleteFurnitureById(
     }
   }
   const furnitureStmt = db.prepare(
-    "SELECT user_id FROM furnitures WHERE id = ?"
+    "SELECT * FROM furnitures WHERE id = ?"
   );
   const furniture = furnitureStmt.get(id);
   if (!furniture) {
     return { error: `Le meuble avec l'id ${id} n'existe pas.` };
   }
+
   const stmtGetImages = db.prepare(
     "SELECT url FROM images WHERE furnitures_id = ?"
   );
@@ -384,6 +385,28 @@ export function deleteFurnitureById(
 
   const stmt = db.prepare("DELETE FROM furnitures WHERE id = ?");
   stmt.run(id);
+
+  
+  const assocTables = [
+    { table: "cities", column: "city_id", id: furniture.city_id },
+    { table: "colors", column: "colors_id", id: furniture.colors_id },
+    { table: "furnitures_materials", column: "materials_id", id: furniture.materials_id },
+    { table: "furnitures_type", column: "type_id", id: furniture.type_id },
+  ];
+
+  assocTables.forEach(({ table, column, id }) => {
+    if (id !== undefined && furniture.id !== undefined) {
+      const countStmt = db.prepare(
+        `SELECT COUNT(*) as count FROM furnitures WHERE ${column} = ? AND id != ?`
+      );
+      const result = countStmt.get(id as number, furniture.id as number);
+      const count = result ? result.count : 0;
+      if (count === 0) {
+        const delStmt = db.prepare(`DELETE FROM ${table} WHERE id = ?`);
+        delStmt.run(id);
+      }
+    }
+  });
   return { success: `Le meuble avec l'id ${id} a été supprimé avec succès.` };
 }
 
