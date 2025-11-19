@@ -313,3 +313,51 @@ export function deleteFurnitureById(
   stmt.run(id);
   return { success: `Le meuble avec l'id ${id} a été supprimé avec succès.` };
 }
+
+export function getTypeListe() {
+  const stmt = db.prepare(`
+    SELECT ft.name 
+    FROM furnitures_type ft
+    JOIN furnitures f ON f.type_id = ft.id
+    JOIN furnitures_status fs ON f.status_id = fs.id
+    WHERE fs.status = 'valider'
+    GROUP BY ft.name;
+  `);
+  return stmt.all();
+}
+export function getCityListe() {
+  const stmt = db.prepare(`
+    SELECT c.name 
+    FROM cities c
+    JOIN furnitures f ON f.type_id = c.id
+    JOIN furnitures_status fs ON f.status_id = fs.id
+    WHERE fs.status = 'valider'
+    GROUP BY c.name;
+  `);
+  return stmt.all();
+}
+
+export function getColorListe() {
+  const stmt = db.prepare(`
+    SELECT c.name 
+    FROM colors c
+    JOIN furnitures f ON f.type_id = c.id
+    JOIN furnitures_status fs ON f.status_id = fs.id
+    WHERE fs.status = 'valider'
+    GROUP BY c.name;
+  `);
+  return stmt.all();
+}
+
+export function getMaterialListe() {
+  const stmt = db.prepare(`
+    SELECT fm.name 
+    FROM furnitures_materials fm
+    JOIN furnitures f ON f.type_id = fm.id
+    JOIN furnitures_status fs ON f.status_id = fs.id
+    WHERE fs.status = 'valider'
+    GROUP BY fm.name;
+  `);
+  return stmt.all();
+}
+

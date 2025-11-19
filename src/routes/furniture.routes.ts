@@ -7,6 +7,10 @@ import {
     getAllmoderatorFurnitures,
     getAllUsersFurnitures,
     deleteFurnitureById,
+    getTypeListe,
+    getCityListe,
+    getColorListe,
+    getMaterialListe,
 } from "../services/furniture.service";
 const router = Router();
 router.use(express.json());
@@ -18,10 +22,32 @@ import {
 } from "../middlewares/auth";
 import { upload,verifyFurnitureId } from "../services/img.service";
 
-router.get("/", async (req: Request, res: Response) => {
-  const furnitures = await getAllValidatedFurnitures();
-  res.send(furnitures);
-});
+// router.get("/", async (req: Request, res: Response) => {
+//   const furnitures = await getAllValidatedFurnitures();
+//   res.send(furnitures);
+// });
+
+router.get("/typeListe", async (req: Request, res: Response) => {
+   const response = getTypeListe()
+   res.send(response);
+})
+router.get("/cityListe", async (req: Request, res: Response) => {
+   const response = getCityListe()
+   res.send(response);
+})
+router.get("/colorListe", async (req: Request, res: Response) => {
+   const response = getColorListe()
+   res.send(response);
+})
+router.get("/materialListe", async (req: Request, res: Response) => {
+   const response = getMaterialListe()
+   res.send(response);
+})
+
+
+
+
+
 
 router.get("/moderator/:status/:search",verifyTokenModerator, async (req: Request, res: Response) => {
     const status = req.params.status !== undefined ? req.params.status : "all";
