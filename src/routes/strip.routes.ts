@@ -1,14 +1,9 @@
 import express , { Router, Request, Response } from 'express';
 const router = Router();
-router.use(express.static('public'));
-// N'applique express.json() qu'aux routes sauf /webhook
-router.use((req, res, next) => {
-    if (req.originalUrl === '/api/stripe/webhook' || req.originalUrl === '/webhook') {
-        next();
-    } else {
-        express.json()(req, res, next);
-    }
-});
+// router.use(express.json());
+// router.use(express.static('public'));
+// router.use(express.urlencoded({ extended: true }));
+
 // This is your test secret API key.
 import dotenv from 'dotenv';
 dotenv.config();
@@ -67,38 +62,54 @@ router.post('/create-checkout-session', async (req, res) => {
 });
 
 // Endpoint webhook Stripe pour écouter les événements de paiement
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    const sig = req.headers['stripe-signature'];
+router.post('/webhook', async (req: Request & { rawBody?: Buffer }, res: Response) => {
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const sigHeader = req.headers['stripe-signature'];
+  const sig = Array.isArray(sigHeader) ? sigHeader[0] : sigHeader;
 
-    if (!endpointSecret) {
-        console.error('La variable d\'environnement STRIPE_WEBHOOK_SECRET n\'est pas définie.');
-        return res.status(500).send('Configuration du webhook Stripe manquante.');
-    }
+  // Debug utiles (temporaire)
+//   console.log('STRIPE_WEBHOOK_SECRET present:', !!endpointSecret);
+//   console.log('stripe-signature header present:', !!sig);
+//   console.log('req.rawBody isBuffer:', !!req.rawBody, req.rawBody ? req.rawBody.length : 0);
+//   console.log('typeof req.body:', typeof req.body, 'Buffer.isBuffer(req.body):', Buffer.isBuffer(req.body));
 
-    let event;
+  if (!endpointSecret) {
+    console.error('La variable d\'environnement STRIPE_WEBHOOK_SECRET n\'est pas définie.');
+    return res.status(500).send('Configuration du webhook Stripe manquante.');
+  }
+  if (!sig) {
+    console.error('Missing stripe-signature header');
+    return res.status(400).send('Missing stripe-signature header');
+  }
 
-    try {
-        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-    } catch (err: any) {
-        console.error('Erreur de vérification du webhook Stripe:', err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
+  // Preferer req.rawBody (capturé par verify). Fallback : si req.body est un Buffer (cas express.raw),
+  // utilisez-le. N'essayez pas de JSON.stringify() un objet parsé.
+  const raw = req.rawBody ?? (Buffer.isBuffer(req.body) ? req.body : undefined);
 
-    // Vérifie si le paiement est réussi
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        // Ici, modifie la base de données selon tes besoins
-        // Par exemple, marque la commande comme payée
-        // await updateOrderStatus(session.id, 'paid');
-        console.log('Paiement réussi pour la session:', session.id);
-        console.log(session);
-        // Ajoute ici ta logique de modification de la base de données
-    }
+  if (!raw) {
+    console.error('Raw body absent — la vérification de signature est impossible.');
+    return res.status(400).send('Raw body absent');
+  }
 
-    res.status(200).json({ received: true });
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(raw, sig, endpointSecret);
+  } catch (err: any) {
+    console.error('Erreur de vérification du webhook Stripe:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Exemple : gérer checkout.session.completed
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as any;
+    console.log('Paiement réussi pour la session:', session.id);
+    // TODO: enfilez un job / mettez à jour la DB
+  } else {
+    console.log('Received unhandled event type:', event.type);
+  }
+
+  return res.status(200).json({ received: true });
 });
-
 router.get('/session-status', async (req, res) => {
   const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
 
