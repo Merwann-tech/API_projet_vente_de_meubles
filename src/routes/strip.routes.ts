@@ -1,7 +1,14 @@
 import express , { Router, Request, Response } from 'express';
 const router = Router();
-router.use(express.json());
 router.use(express.static('public'));
+// N'applique express.json() qu'aux routes sauf /webhook
+router.use((req, res, next) => {
+    if (req.originalUrl === '/api/stripe/webhook' || req.originalUrl === '/webhook') {
+        next();
+    } else {
+        express.json()(req, res, next);
+    }
+});
 // This is your test secret API key.
 import dotenv from 'dotenv';
 dotenv.config();
@@ -63,6 +70,11 @@ router.post('/create-checkout-session', async (req, res) => {
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
     const sig = req.headers['stripe-signature'];
+
+    if (!endpointSecret) {
+        console.error('La variable d\'environnement STRIPE_WEBHOOK_SECRET n\'est pas définie.');
+        return res.status(500).send('Configuration du webhook Stripe manquante.');
+    }
 
     let event;
 
