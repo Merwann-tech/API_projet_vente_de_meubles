@@ -7,7 +7,9 @@ import { loginRoutes } from './login.routes';
 import { tokenRoutes } from './token.routes';
 import { imgRoutes } from './img.routes';
 import { furnitureRoutes } from './furniture.routes';
+import { stripRoutes } from './strip.routes';
 
+router.use("/strip", stripRoutes);  
 router.use("/token", tokenRoutes);
 router.use("/login", loginRoutes);
 router.use("/users", usersRoutes);
