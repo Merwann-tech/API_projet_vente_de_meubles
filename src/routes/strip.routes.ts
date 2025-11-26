@@ -6,6 +6,7 @@ const router = Router();
 
 // This is your test secret API key.
 import dotenv from 'dotenv';
+import { updateFurnitureStatusToSold } from '../services/furniture.service';
 dotenv.config();
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY as string);
@@ -102,8 +103,7 @@ router.post('/webhook', async (req: Request & { rawBody?: Buffer }, res: Respons
   // Exemple : gérer checkout.session.completed
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as any;
-    console.log('Paiement réussi pour la session:', session.id);
-    // TODO: enfilez un job / mettez à jour la DB
+    updateFurnitureStatusToSold(Number(session.metadata.annonceId));
   } else {
     console.log('Received unhandled event type:', event.type);
   }

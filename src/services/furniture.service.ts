@@ -456,3 +456,22 @@ export function getMaterialListe() {
   `);
   return stmt.all();
 }
+
+export function updateFurnitureStatusToSold(id: number) {
+  const stmt = db.prepare(`
+        SELECT status_id FROM furnitures WHERE id = ?;
+    `);
+  const row = stmt.get(id); 
+  const venduStatusIdStmt = db.prepare(`
+        SELECT id FROM furnitures_status WHERE status = 'vendu';
+    `);
+  const venduStatus = venduStatusIdStmt.get();
+  if (row && venduStatus && row.status_id === venduStatus.id) {
+    throw new Error("Le meuble est déjà marqué comme vendu.");
+  }
+  db.exec(`
+        UPDATE furnitures
+        SET status_id = (SELECT id FROM furnitures_status WHERE status = 'vendu')
+        WHERE id = ${id};
+    `);
+}
