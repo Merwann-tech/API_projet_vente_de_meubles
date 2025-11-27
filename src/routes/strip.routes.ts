@@ -1,10 +1,6 @@
 import express , { Router, Request, Response } from 'express';
 const router = Router();
-// router.use(express.json());
-// router.use(express.static('public'));
-// router.use(express.urlencoded({ extended: true }));
 
-// This is your test secret API key.
 import dotenv from 'dotenv';
 import { updateFurnitureStatusToSold } from '../services/furniture.service';
 dotenv.config();
@@ -12,13 +8,13 @@ dotenv.config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY as string);
 
 const YOUR_DOMAIN = 'http://localhost:3001';
-// Endpoint pour créer une session de paiement Stripe
+
 router.post('/create-checkout-session', async (req, res) => {
     try {
         const body = req.body || {};
         const origin = YOUR_DOMAIN || process.env.FRONTEND_URL || 'http://localhost:3000';
 
-        // Prépare line_items selon priceId ou amount
+
         let line_items;
         if (body.priceId) {
             line_items = [
@@ -28,7 +24,7 @@ router.post('/create-checkout-session', async (req, res) => {
                 },
             ];
         } else if (body.amount) {
-            // amount attendu en cents
+
             line_items = [
                 {
                     price_data: {
@@ -54,7 +50,7 @@ router.post('/create-checkout-session', async (req, res) => {
             metadata: body.metadata,
         });
 
-        // Retourne l'URL de redirection vers Stripe
+
         return res.json({ url: session.url });
     } catch (err: any) {
         console.error('create-checkout-session error', err);
@@ -62,17 +58,12 @@ router.post('/create-checkout-session', async (req, res) => {
     }
 });
 
-// Endpoint webhook Stripe pour écouter les événements de paiement
+
 router.post('/webhook', async (req: Request & { rawBody?: Buffer }, res: Response) => {
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
   const sigHeader = req.headers['stripe-signature'];
   const sig = Array.isArray(sigHeader) ? sigHeader[0] : sigHeader;
 
-  // Debug utiles (temporaire)
-//   console.log('STRIPE_WEBHOOK_SECRET present:', !!endpointSecret);
-//   console.log('stripe-signature header present:', !!sig);
-//   console.log('req.rawBody isBuffer:', !!req.rawBody, req.rawBody ? req.rawBody.length : 0);
-//   console.log('typeof req.body:', typeof req.body, 'Buffer.isBuffer(req.body):', Buffer.isBuffer(req.body));
 
   if (!endpointSecret) {
     console.error('La variable d\'environnement STRIPE_WEBHOOK_SECRET n\'est pas définie.');
@@ -83,8 +74,7 @@ router.post('/webhook', async (req: Request & { rawBody?: Buffer }, res: Respons
     return res.status(400).send('Missing stripe-signature header');
   }
 
-  // Preferer req.rawBody (capturé par verify). Fallback : si req.body est un Buffer (cas express.raw),
-  // utilisez-le. N'essayez pas de JSON.stringify() un objet parsé.
+
   const raw = req.rawBody ?? (Buffer.isBuffer(req.body) ? req.body : undefined);
 
   if (!raw) {
@@ -100,7 +90,7 @@ router.post('/webhook', async (req: Request & { rawBody?: Buffer }, res: Respons
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Exemple : gérer checkout.session.completed
+
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as any;
     updateFurnitureStatusToSold(Number(session.metadata.annonceId));
@@ -110,6 +100,7 @@ router.post('/webhook', async (req: Request & { rawBody?: Buffer }, res: Respons
 
   return res.status(200).json({ received: true });
 });
+
 router.get('/session-status', async (req, res) => {
   const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
 

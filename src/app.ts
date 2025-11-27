@@ -8,12 +8,10 @@ app.use(cors());
 
 app.use(express.json({
   verify: (req: any, _res, buf: Buffer) => {
-    // stocke le buffer brut pour pouvoir vérifier la signature Stripe plus tard
     if (buf && buf.length) {
       req.rawBody = buf;
     }
   },
-  // optionnel : limiter la taille des payloads
   limit: '1mb',
 }));
 
