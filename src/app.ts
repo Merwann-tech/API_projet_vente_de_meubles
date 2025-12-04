@@ -1,10 +1,19 @@
 import express, { Application, Request, Response } from 'express';
 import { notFound } from './middlewares/notFound';
 import router from './routes';
-
+import cors from 'cors';
 const app: Application = express();
+app.use(cors());
 
-router.use(express.json());
+
+app.use(express.json({
+  verify: (req: any, _res, buf: Buffer) => {
+    if (buf && buf.length) {
+      req.rawBody = buf;
+    }
+  },
+  limit: '1mb',
+}));
 
 app.use('/', router)
 
