@@ -1,4 +1,5 @@
 import express from 'express';
+import { JwtPayload } from 'jsonwebtoken';
 const router = express.Router();
 import { verifyToken } from '../services/token.services';
 // ...existing code...

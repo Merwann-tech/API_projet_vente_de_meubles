@@ -6,8 +6,10 @@ import { defineConfig } from "eslint/config";
 
 export default defineConfig([
   {
+    ignores: ["**/dist/**", "**/node_modules/**"],
+  },
+  {
     files: ["src/**/*.{js,mjs,cjs,ts,mts,cts}", "test/**/*.{js,mjs,cjs,ts,mts,cts}"],
-    ignores: ["dist/**", "node_modules/**"],
     plugins: { js, "@typescript-eslint": tseslint.plugin },
     extends: ["js/recommended"],
     languageOptions: {

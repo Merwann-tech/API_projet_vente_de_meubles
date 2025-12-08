@@ -8,7 +8,7 @@ export function getAllUsers() {
   return stmt.all();
 }
 
-interface VolunteerData {
+export interface VolunteerData {
   firstname: string;
   lastname: string;
   email: string;

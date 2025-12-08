@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint src --ext .ts",
     "build": "tsc",
     "start": "node dist/app.js",
     "dev": "nodemon src/app.ts",
