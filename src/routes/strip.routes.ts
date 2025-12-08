@@ -6,7 +6,7 @@ import { updateFurnitureStatusToSold } from '../services/furniture.service';
 dotenv.config();
 
 import Stripe from 'stripe';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion: '2022-11-15' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 const YOUR_DOMAIN = 'http://localhost:3001';
 
@@ -55,7 +55,8 @@ router.post('/create-checkout-session', async (req, res) => {
         return res.json({ url: session.url });
     } catch (err: unknown) {
         console.error('create-checkout-session error', err);
-        return res.status(500).json({ error: err.message });
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        return res.status(500).json({ error: errorMessage });
     }
 });
 
@@ -94,8 +95,10 @@ router.post('/webhook', async (req: Request & { rawBody?: Buffer }, res: Respons
 
 
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Record<string, unknown>;
-    updateFurnitureStatusToSold(Number((session.metadata as { annonceId: string }).annonceId));
+    const session = event.data.object as Stripe.Checkout.Session;
+    if (session.metadata?.annonceId) {
+        updateFurnitureStatusToSold(Number(session.metadata.annonceId));
+    }
   } else {
     console.log('Received unhandled event type:', event.type);
   }
@@ -104,11 +107,15 @@ router.post('/webhook', async (req: Request & { rawBody?: Buffer }, res: Respons
 });
 
 router.get('/session-status', async (req, res) => {
-  const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+  const sessionId = req.query.session_id as string;
+  if (!sessionId) {
+      return res.status(400).json({ error: 'session_id is required' });
+  }
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
 
   res.send({
     status: session.status,
-    customer_email: session.customer_details.email
+    customer_email: session.customer_details?.email
   });
 });
 

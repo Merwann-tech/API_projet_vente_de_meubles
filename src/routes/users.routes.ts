@@ -1,4 +1,4 @@
-import express, { Router } from "express";
+import express, { Router, Request, Response } from "express";
 import {
     addAdmin,
   addModerator,
@@ -43,7 +43,8 @@ router.get("/token", verifyTokenUsers, (req: Request, res: Response) => {
 });
 
 router.post("/", async (req: Request, res: Response) => {
-  const response = await addVolunteer(req.body);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const response = await addVolunteer(req.body as any);
   res.status(201).json(response);
 });
 
@@ -89,13 +90,18 @@ router.put("/removeAdmin/:id", verifyTokenAdmin, async (req: Request, res: Respo
   if (!idParam) {
     return res.status(400).json({ message: "User ID is required" });
   }
-  const result = removeAdmin(idParam, (req as { id?: number }).id);
+  const userId = (req as { id?: number }).id;
+  if (userId === undefined) {
+      return res.status(400).json({ message: "User ID missing in token" });
+  }
+  const result = removeAdmin(idParam, userId);
   res.json(result);
 });
 
 router.put("/token", verifyTokenUsers, async (req: Request, res: Response) => {
   const volunteerId = Number((req as { id?: number }).id);
-  const result = await updateUser(volunteerId, req.body);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result = await updateUser(volunteerId, req.body as any);
   res.json(result);
 });
 router.get("/name/:name", verifyTokenAdmin, (req: Request, res: Response) => {
