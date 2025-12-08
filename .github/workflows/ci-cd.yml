@@ -28,5 +28,5 @@ jobs:
       run: npm test
 
     - name: Lint code
-      run: npx eslint src --ext .ts --fix
+      run:  npm run lint
 
