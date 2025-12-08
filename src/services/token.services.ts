@@ -1,4 +1,4 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -8,10 +8,10 @@ export function createToken(payload: object): string {
     return jwt.sign(payload, ACCESS_SECRET, { algorithm: 'HS256', expiresIn: '30min' });
 }
 
-export function verifyToken(token: string){
+export function verifyToken(token: string) {
     try {
         return jwt.verify(token, ACCESS_SECRET);
-    } catch (err) {
+    } catch {
         return null;
     }
 }

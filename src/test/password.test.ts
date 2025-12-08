@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
-import {hashPassword} from '../services/password.services'
+import { hashPassword } from '../services/password.services'
 import { capitalize } from '../services/users.services'
 import { isValidEmail } from '../services/users.services'
-import e from 'express'
+// ...existing code...
 // test('adds 1 + 2 to equal 3', () => {
 //   expect(sum(1, 2)).toBe(3)
 // })

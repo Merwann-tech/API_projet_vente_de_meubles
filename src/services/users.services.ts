@@ -1,4 +1,4 @@
-import e from "express";
+// ...existing code...
 import { db } from "../db";
 import { hashPassword } from "./password.services";
 import { SQLInputValue } from "node:sqlite";
@@ -17,8 +17,8 @@ interface VolunteerData {
 }
 
 export async function addVolunteer(volunteerData: VolunteerData) {
-  let city = await capitalize(volunteerData.city);
-  let hashedPassword = await hashPassword(volunteerData.password);
+  const city = await capitalize(volunteerData.city);
+  const hashedPassword = await hashPassword(volunteerData.password);
   if (!isValidEmail(volunteerData.email)) {
     return { error: "Invalid email format" };
   }
@@ -195,10 +195,10 @@ export function removeAdmin(idParam: string ,userId: number) {
   } 
 
 export function capitalize(city: string) {
-  let cityLower = city.toLowerCase();
-  let cityCapitalize =
+  const cityLower = city.toLowerCase();
+  const cityCapitalize =
     (cityLower[0] as string).toUpperCase() + cityLower.slice(1);
-  let cityNoSpaces = cityCapitalize.replace(/\s+/g, '');
+  const cityNoSpaces = cityCapitalize.replace(/\s+/g, '');
   return cityNoSpaces;
 }
 

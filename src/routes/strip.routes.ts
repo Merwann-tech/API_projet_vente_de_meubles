@@ -1,11 +1,12 @@
-import express , { Router, Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 const router = Router();
 
 import dotenv from 'dotenv';
 import { updateFurnitureStatusToSold } from '../services/furniture.service';
 dotenv.config();
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY as string);
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion: '2022-11-15' });
 
 const YOUR_DOMAIN = 'http://localhost:3001';
 
@@ -52,7 +53,7 @@ router.post('/create-checkout-session', async (req, res) => {
 
 
         return res.json({ url: session.url });
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('create-checkout-session error', err);
         return res.status(500).json({ error: err.message });
     }
@@ -85,15 +86,16 @@ router.post('/webhook', async (req: Request & { rawBody?: Buffer }, res: Respons
   let event;
   try {
     event = stripe.webhooks.constructEvent(raw, sig, endpointSecret);
-  } catch (err: any) {
-    console.error('Erreur de vérification du webhook Stripe:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+  } catch (err: unknown) {
+    const message = typeof err === 'object' && err !== null && 'message' in err ? (err as { message: string }).message : String(err);
+    console.error('Erreur de vérification du webhook Stripe:', message);
+    return res.status(400).send(`Webhook Error: ${message}`);
   }
 
 
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as any;
-    updateFurnitureStatusToSold(Number(session.metadata.annonceId));
+    const session = event.data.object as Record<string, unknown>;
+    updateFurnitureStatusToSold(Number((session.metadata as { annonceId: string }).annonceId));
   } else {
     console.log('Received unhandled event type:', event.type);
   }
