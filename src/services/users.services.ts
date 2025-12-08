@@ -198,7 +198,8 @@ export function capitalize(city: string) {
   let cityLower = city.toLowerCase();
   let cityCapitalize =
     (cityLower[0] as string).toUpperCase() + cityLower.slice(1);
-  return cityCapitalize;
+  let cityNoSpaces = cityCapitalize.replace(/\s+/g, '');
+  return cityNoSpaces;
 }
 
 export function verifyEmail(email: string): number {
@@ -233,7 +234,7 @@ export function getModeratorById(id: number) {
 }
 
 export function isValidEmail(email: string): boolean {
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailPattern = /^(?!.*\.\.)[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailPattern.test(email);
 }
 
