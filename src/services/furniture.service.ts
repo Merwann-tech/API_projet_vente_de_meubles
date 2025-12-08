@@ -1,4 +1,4 @@
-import e from "express";
+// ...existing code...
 import { db } from "../db";
 import { capitalize } from "./users.services";
 import fs from "fs";
@@ -140,7 +140,7 @@ export function getAllValidatedFurnitures(
     WHERE f.status_id = (SELECT id FROM furnitures_status WHERE status = 'valider')
   `;
 
-  const params: any[] = [];
+  const params: (string | number | null)[] = [];
 
   if (
     search &&
@@ -231,7 +231,7 @@ export function getAllmoderatorFurnitures(status: string, search: string) {
         LEFT JOIN images i ON i.furnitures_id = f.id
     `;
 
-  const params: any[] = [];
+  const params: (string | number | null)[] = [];
   const conditions: string[] = [];
 
   if (status !== "all") {
@@ -299,7 +299,7 @@ export function getAllUsersFurnitures(
         LEFT JOIN images i ON i.furnitures_id = f.id
     `;
 
-  const params: any[] = [];
+  const params: (string | number | null)[] = [];
   const conditions: string[] = [];
 
   conditions.push(`f.user_id = ?`);
@@ -368,7 +368,7 @@ export function deleteFurnitureById(
   );
   const images = stmtGetImages.all(id);
 
-  images.forEach((img: Record<string, any>) => {
+  images.forEach((img: Record<string, unknown>) => {
     const imagePath = path.join(
       __dirname,
       "..",

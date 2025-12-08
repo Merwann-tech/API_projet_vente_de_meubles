@@ -17,7 +17,6 @@ router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
 import {
   verifyTokenUsers,
-  verifyTokenAdmin,
   verifyTokenModerator,
 } from "../middlewares/auth";
 import { upload,verifyFurnitureId } from "../services/img.service";
@@ -99,19 +98,19 @@ router.get("/moderator/:status",verifyTokenModerator, async (req: Request, res: 
 router.get("/users/:status/:search",verifyTokenUsers, async (req: Request, res: Response) => {
     const status = req.params.status !== undefined ? req.params.status : "all";
     const search = req.params.search !== undefined ? req.params.search : "";
-    const furnitures = getAllUsersFurnitures(status, search, Number((req as any).id));
+    const furnitures = getAllUsersFurnitures(status, search, Number((req as { id?: number }).id));
     res.send(furnitures);
 });
 
 router.get("/users/:status",verifyTokenUsers, async (req: Request, res: Response) => {
     const status = req.params.status !== undefined ? req.params.status : "all";
     const search = "";
-    const furnitures = getAllUsersFurnitures(status, search, Number((req as any).id));
+    const furnitures = getAllUsersFurnitures(status, search, Number((req as { id?: number }).id));
     res.send(furnitures);
 });
 
 router.delete("/users/:id",verifyTokenUsers, async (req: Request, res: Response) => {
-    const response = deleteFurnitureById(Number(req.params.id), Number((req as any).id));
+    const response = deleteFurnitureById(Number(req.params.id), Number((req as { id?: number }).id));
     if (response.success) {
         res.status(200).send(response);
     } else {
@@ -120,7 +119,7 @@ router.delete("/users/:id",verifyTokenUsers, async (req: Request, res: Response)
 });
 
 router.delete("/moderator/:id",verifyTokenModerator, async (req: Request, res: Response) => {
-    const response = deleteFurnitureById(Number(req.params.id), Number((req as any).id),true);
+    const response = deleteFurnitureById(Number(req.params.id), Number((req as { id?: number }).id),true);
     if (response.success) {
         res.status(200).send(response);
     } else {
@@ -137,7 +136,7 @@ router.post(
   upload.array("images", 5),
   async (req: Request, res: Response) => {
     const data = req.body;
-    const id = await addfurniture(data, Number((req as any).id));
+    const id = await addfurniture(data, Number((req as { id?: number }).id));
     verifyFurnitureId(req, res, id);
   }
 );

@@ -1,7 +1,7 @@
-import express , { Router, Request, Response } from 'express';
+import express from 'express';
 const router = express.Router();
 import { verifyToken } from '../services/token.services';
-import jwt, { JwtPayload } from 'jsonwebtoken'
+// ...existing code...
 import { getAdminById,getModeratorById } from '../services/users.services';
 
 

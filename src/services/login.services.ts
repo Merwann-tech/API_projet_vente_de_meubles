@@ -4,14 +4,14 @@ import { createToken } from './token.services';
 
 export async function loginUser(email: string, password: string) {
     if (verifyEmail(email) > 0) {
-        let hashedPassword = getPasswordByEmail(email)
+        const hashedPassword = getPasswordByEmail(email)
         if (!hashedPassword) {
             return { error: 'Invalid email or password' };
         }
         if (await verifyPassword(hashedPassword, password)) {
-            let id = await getIdByEmail(email)
-            let jsonid = { id: id }
-            let token = createToken(jsonid)
+            const id = await getIdByEmail(email)
+            const jsonid = { id: id }
+            const token = createToken(jsonid)
             return {
                 message: 'Login successful',
                 token: token,

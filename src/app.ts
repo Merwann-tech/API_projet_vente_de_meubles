@@ -7,9 +7,9 @@ app.use(cors());
 
 
 app.use(express.json({
-  verify: (req: any, _res, buf: Buffer) => {
+  verify: (req: unknown, _res: Response, buf: Buffer) => {
     if (buf && buf.length) {
-      req.rawBody = buf;
+      (req as Record<string, unknown>).rawBody = buf;
     }
   },
   limit: '1mb',

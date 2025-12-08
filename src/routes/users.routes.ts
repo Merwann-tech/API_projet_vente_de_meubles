@@ -1,4 +1,4 @@
-import express, { Router, Request, Response } from "express";
+import express, { Router } from "express";
 import {
     addAdmin,
   addModerator,
@@ -13,7 +13,6 @@ import { addVolunteer } from "../services/users.services";
 import {
   verifyTokenUsers,
   verifyTokenAdmin,
-  verifyTokenModerator,
 } from "../middlewares/auth";
 
 const router = Router();
@@ -38,13 +37,13 @@ router.get("/id/:id", verifyTokenAdmin, (req: Request, res: Response) => {
 });
 
 router.get("/token", verifyTokenUsers, (req: Request, res: Response) => {
-  const volunteerId = Number((req as any).id);
+  const volunteerId = Number((req as { id?: number }).id);
   const row = getUserById(volunteerId);
   res.status(200).json(row);
 });
 
 router.post("/", async (req: Request, res: Response) => {
-  let response = await addVolunteer(req.body);
+  const response = await addVolunteer(req.body);
   res.status(201).json(response);
 });
 
@@ -90,12 +89,12 @@ router.put("/removeAdmin/:id", verifyTokenAdmin, async (req: Request, res: Respo
   if (!idParam) {
     return res.status(400).json({ message: "User ID is required" });
   }
-  const result = removeAdmin(idParam, (req as any).id);
+  const result = removeAdmin(idParam, (req as { id?: number }).id);
   res.json(result);
 });
 
 router.put("/token", verifyTokenUsers, async (req: Request, res: Response) => {
-  const volunteerId = Number((req as any).id);
+  const volunteerId = Number((req as { id?: number }).id);
   const result = await updateUser(volunteerId, req.body);
   res.json(result);
 });
